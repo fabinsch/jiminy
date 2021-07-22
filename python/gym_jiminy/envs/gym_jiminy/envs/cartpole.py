@@ -187,11 +187,11 @@ class CartPoleJiminyEnv(BaseJiminyEnv):
             X_RANDOM_MAX, THETA_RANDOM_MAX]), rg=self.rg)
         qvel_sampled = sample(scale=np.array([
             DX_RANDOM_MAX, DTHETA_RANDOM_MAX]), rg=self.rg)
-        for i, joint in enumerate(['slider_to_cart', 'cart_to_pole']):
-            qpos[self.robot.pinocchio_model.joints[
-                  self.robot.pinocchio_model.getJointId(joint)].idx_q] = qpos_sampled[i]
-            qvel[self.robot.pinocchio_model.joints[
-                  self.robot.pinocchio_model.getJointId(joint)].idx_v] = qvel_sampled[i]
+        for i, joint_name in enumerate(['slider_to_cart', 'cart_to_pole']):
+            joint_id = self.robot.pinocchio_model.getJointId(joint_name)
+            joint = self.robot.pinocchio_model.joints[joint_id]
+            qpos[joint.idx_q] = qpos_sampled[i]
+            qvel[joint.idx_v] = qvel_sampled[i]
 
         # Make sure the configuration is valid
         qpos = normalize(self.robot.pinocchio_model, qpos)
