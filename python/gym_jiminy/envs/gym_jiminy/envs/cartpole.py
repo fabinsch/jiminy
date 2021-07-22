@@ -2,6 +2,7 @@
 """
 import os
 import numpy as np
+import math
 from pkg_resources import resource_filename
 from typing import Optional, Tuple, Dict, Any
 
@@ -12,6 +13,7 @@ from jiminy_py.simulator import Simulator
 
 from gym_jiminy.common.utils import sample, SpaceDictNested
 from gym_jiminy.common.envs import BaseJiminyEnv
+from pinocchio import normalize
 
 
 # Stepper update period
@@ -89,13 +91,13 @@ class CartPoleJiminyEnv(BaseJiminyEnv):
         # Get URDF path
         data_dir = resource_filename(
             "gym_jiminy.envs", "data/toys_models/cartpole")
-        urdf_path = os.path.join(data_dir, "cartpole.urdf")
+        # urdf_path = os.path.join(data_dir, "cartpole.urdf")
+        urdf_path = os.path.join(data_dir, "cartpole_hanging.urdf")
 
         # Instantiate robot
         robot = jiminy.Robot()
         robot.initialize(
             urdf_path, has_freeflyer=False, mesh_package_dirs=[data_dir])
-
         # Add motors and sensors
         motor_joint_name = "slider_to_cart"
         encoder_sensors_descr = {
@@ -179,10 +181,20 @@ class CartPoleJiminyEnv(BaseJiminyEnv):
 
         Bounds of hypercube associated with initial state of robot.
         """
-        qpos = sample(scale=np.array([
+        qpos = self._neutral()
+        qvel = np.zeros(self.robot.nv)
+        qpos_sampled = sample(scale=np.array([
             X_RANDOM_MAX, THETA_RANDOM_MAX]), rg=self.rg)
-        qvel = sample(scale=np.array([
+        qvel_sampled = sample(scale=np.array([
             DX_RANDOM_MAX, DTHETA_RANDOM_MAX]), rg=self.rg)
+        for i, joint in enumerate(['slider_to_cart', 'cart_to_pole']):
+            qpos[self.robot.pinocchio_model.joints[
+                  self.robot.pinocchio_model.getJointId(joint)].idx_q] = qpos_sampled[i]
+            qvel[self.robot.pinocchio_model.joints[
+                  self.robot.pinocchio_model.getJointId(joint)].idx_v] = qvel_sampled[i]
+
+        # Make sure the configuration is valid
+        qpos = normalize(self.robot.pinocchio_model, qpos)
         return qpos, qvel
 
     def refresh_observation(self) -> None:
