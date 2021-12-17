@@ -5,6 +5,7 @@
 
 #include "jiminy/core/robot/AbstractMotor.h"
 #include "jiminy/core/robot/AbstractSensor.h"
+#include "jiminy/core/robot/AbstractTransmission.h"
 #include "jiminy/core/telemetry/TelemetryData.h"
 #include "jiminy/core/io/FileDevice.h"
 #include "jiminy/core/utilities/Helpers.h"
@@ -22,12 +23,15 @@ namespace jiminy
     telemetryData_(nullptr),
     motorsHolder_(),
     sensorsGroupHolder_(),
+    transmissionsHolder_(),
     sensorTelemetryOptions_(),
     motorsNames_(),
     sensorsNames_(),
+    transmissionsNames_(),
     commandFieldnames_(),
     motorEffortFieldnames_(),
     nmotors_(0U),
+    actuatedJointNames_(),
     mutexLocal_(std::make_unique<MutexLocal>()),
     motorsSharedHolder_(std::make_shared<MotorSharedDataHolder_t>()),
     sensorsSharedHolder_()

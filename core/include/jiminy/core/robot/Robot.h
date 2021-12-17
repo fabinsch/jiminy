@@ -11,6 +11,7 @@ namespace jiminy
     class AbstractMotorBase;
     struct SensorSharedDataHolder_t;
     class AbstractSensorBase;
+    class AbstractTransmissionBase;
     class TelemetryData;
     class MutexLocal;
     class LockGuardLocal;
@@ -22,6 +23,7 @@ namespace jiminy
         using sensorsHolder_t = std::vector<std::shared_ptr<AbstractSensorBase> >;
         using sensorsGroupHolder_t = std::unordered_map<std::string, sensorsHolder_t>;
         using sensorsSharedHolder_t = std::unordered_map<std::string, std::shared_ptr<SensorSharedDataHolder_t> >;
+        using transmissionsHolder_t = std::vector<std::shared_ptr<AbstractTransmissionBase> >;
 
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -137,9 +139,19 @@ namespace jiminy
         hresult_t getLock(std::unique_ptr<LockGuardLocal> & lock);
         bool_t const & getIsLocked(void) const;
 
+        hresult_t attachTransmission(std::shared_ptr<AbstractTransmissionBase> transmission);
+        hresult_t detachTransmission(std::string const & transmissionName);
+        hresult_t detachTransmissions(std::vector<std::string> const & transmissionsNames = {});
+        hresult_t getTransmission(std::string const & transmissionName,
+                                  std::shared_ptr<AbstractTransmissionBase> & transmission);
+        transmissionsHolder_t const & getTransmissions(void) const;
+        vectorN_t const & getMotorsEffortLimits(void) const;  // TODO what is this for
+        std::vector<std::string> const & getActuatedJointNames(void) const;
+
     protected:
         hresult_t refreshMotorsProxies(void);
         hresult_t refreshSensorsProxies(void);
+        hresult_t refreshTransmissionProxies(void);
         virtual hresult_t refreshProxies(void) override;
 
     protected:
@@ -147,12 +159,15 @@ namespace jiminy
         std::shared_ptr<TelemetryData> telemetryData_;
         motorsHolder_t motorsHolder_;
         sensorsGroupHolder_t sensorsGroupHolder_;
+        transmissionsHolder_t transmissionsHolder_;
         std::unordered_map<std::string, bool_t> sensorTelemetryOptions_;
         std::vector<std::string> motorsNames_;                                      ///< Name of the motors
         std::unordered_map<std::string, std::vector<std::string> > sensorsNames_;   ///< Name of the sensors
+        std::vector<std::string> transmissionsNames_;                               ///< Name of the transmissions
         std::vector<std::string> commandFieldnames_;                                ///< Fieldnames of the command
         std::vector<std::string> motorEffortFieldnames_;                            ///< Fieldnames of the motors effort
         uint64_t nmotors_;                                                          ///< The number of motors
+        std::vector<std::string> actuatedJointNames_;                               ///< List of joints attached to a transmission
 
     private:
         std::unique_ptr<MutexLocal> mutexLocal_;
