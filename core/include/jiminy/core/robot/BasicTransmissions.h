@@ -40,21 +40,21 @@ namespace jiminy
         auto shared_from_this() { return shared_from(this); }
         auto shared_from_this() const { return shared_from(this); }
 
-        virtual hresult_t setOptions(configHolder_t const & transmissionOptions) final override;
+    //     virtual hresult_t setOptions(configHolder_t const & transmissionOptions) final override;
 
-    private:
-        virtual void computeTransform(Eigen::VectorBlock<vectorN_t const> const & q,
-                                      Eigen::VectorBlock<vectorN_t const> const & v,
-                                      matrixN_t & out) final override;
+    // private:
+    //     virtual void computeTransform(Eigen::VectorBlock<vectorN_t const> const & q,
+    //                                   Eigen::VectorBlock<vectorN_t const> const & v,
+    //                                   matrixN_t & out) final override;
 
-        virtual void computeInverseTransform(Eigen::VectorBlock<vectorN_t const> const & q,
-                                             Eigen::VectorBlock<vectorN_t const> const & v,
-                                             matrixN_t & out) final override;
+    //     virtual void computeInverseTransform(Eigen::VectorBlock<vectorN_t const> const & q,
+    //                                          Eigen::VectorBlock<vectorN_t const> const & v,
+    //                                          matrixN_t & out) final override;
 
-        virtual void computeEffortTransmission(void);
+    //     virtual void computeEffortTransmission(void);
 
-    private:
-        std::unique_ptr<transmissionOptions_t const> transmissionOptions_;
+    // private:
+    //     std::unique_ptr<transmissionOptions_t const> transmissionOptions_;
     };
 }
 
