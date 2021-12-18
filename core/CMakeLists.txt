@@ -64,6 +64,8 @@ set(SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicMotors.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/AbstractSensor.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicSensors.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/AbstractTransmission.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicTransmissions.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/Robot.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/control/AbstractController.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/solver/LCPSolvers.cc"

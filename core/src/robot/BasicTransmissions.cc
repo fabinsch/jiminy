@@ -8,8 +8,7 @@
 namespace jiminy
 {
     SimpleTransmission::SimpleTransmission(std::string const & name) :
-    AbstractTransmissionBase(name),
-    transmissionOptions_(nullptr)
+    AbstractTransmissionBase(name)
     {
         std::cout << "init simple transmission" << std::endl;
     }

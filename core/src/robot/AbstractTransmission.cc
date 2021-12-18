@@ -20,7 +20,11 @@ namespace jiminy
     jointTypes_(),
     jointPositionIndices_(-1),
     jointVelocityIndices_(-1),
-    motorNames_()
+    motorNames_(),
+    motorIndices_(),
+    motors_(),
+    forwardTransform_(),
+    backwardTransform_()
     {
         // Empty.
     }
