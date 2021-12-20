@@ -1439,4 +1439,61 @@ namespace jiminy
     {
         return nmotors_;
     }
+
+    hresult_t Robot::attachTransmission(std::shared_ptr<AbstractTransmissionBase> transmission)
+    {
+        hresult_t returnCode = hresult_t::SUCCESS;
+
+        if (!isInitialized_)
+        {
+            PRINT_ERROR("The robot is not initialized.");
+            returnCode = hresult_t::ERROR_INIT_FAILED;
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            if (getIsLocked())
+            {
+                PRINT_ERROR("Robot is locked, probably because a simulation is running. "
+                            "Please stop it before adding motors.");
+                returnCode = hresult_t::ERROR_GENERIC;
+            }
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            std::string const & transmissionName = transmission->getName();
+            auto transmissionIt = std::find_if(transmissionsHolder_.begin(), transmissionsHolder_.end(),
+                                        [&transmissionName](auto const & elem)
+                                        {
+                                            return (elem->getName() == transmissionName);
+                                        });
+            if (transmissionIt != transmissionsHolder_.end())
+            {
+                PRINT_ERROR("A transmission with the same name already exists.");
+                returnCode = hresult_t::ERROR_BAD_INPUT;
+            }
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Attach the transmission
+            returnCode = transmission->attach(shared_from_this());
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Add the transmission to the holder
+            transmissionsHolder_.push_back(transmission);
+
+            // TODO Refresh the transmissions proxies
+            // refreshTransmissionProxies();
+        }
+
+        // update list of actuated joints
+        // std::vector<std::string> const & jointNames = transmission->getJointNames();  // TODO still not available, just after init
+        // actuatedJointNames_.insert(actuatedJointNames_.end(), jointNames.begin(), jointNames.end());
+
+        return returnCode;
+    }
 }

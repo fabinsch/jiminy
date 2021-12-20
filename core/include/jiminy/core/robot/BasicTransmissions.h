@@ -39,6 +39,21 @@ namespace jiminy
 
         auto shared_from_this() { return shared_from(this); }
         auto shared_from_this() const { return shared_from(this); }
+
+        virtual hresult_t setOptions(configHolder_t const & transmissionOptions) final override;
+
+        virtual void computeJacobian(vectorN_t const & qMotors,
+                                     matrixN_t & jac) final override;
+
+        virtual void computeInverseJacobian(vectorN_t const & qJoints,
+                                            matrixN_t & jac) final override;
+    private:
+        virtual void computeTransform(vectorN_t const & qMotors,
+                                      vectorN_t       & qJoints) final override;
+        virtual void computeInverseTransform(vectorN_t       & qMotors,
+                                             vectorN_t const & qJoints) final override;
+
+        virtual void computeEffortTransmission(void) final override;
     };
 }
 

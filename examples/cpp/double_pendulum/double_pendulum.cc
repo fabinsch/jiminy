@@ -75,19 +75,23 @@ int main(int /* argc */, char_t * /* argv */[])
     boost::get<bool_t>(boost::get<configHolder_t>(modelOptions.at("joints")).at("velocityLimitFromUrdf")) = true;
     robot->setModelOptions(modelOptions);
     robot->initialize(urdfPath.string(), false, {dataPath.string()});
-    for (std::string const & transmissionName : transmissionNames)
-    {
-        auto transmission = std::make_shared<SimpleTransmission>(transmissionName);
-        // robot->attachTransmission(transmission);
-        // motor->initialize(jointName);
-    }
-
     for (std::string const & jointName : motorJointNames)
     {
         auto motor = std::make_shared<SimpleMotor>(jointName);
         robot->attachMotor(motor);
         motor->initialize(jointName);
+        std::cout << "motor initialized" << std::endl;
     }
+
+    for (std::string const & transmissionName : transmissionNames)
+    {
+        auto transmission = std::make_shared<SimpleTransmission>(transmissionName);
+        robot->attachTransmission(transmission);
+        std::cout<< "transmission attached" <<std::endl;
+        transmission->initialize(motorJointNames, motorJointNames);
+        std::cout<< "transmission initialized" <<std::endl;
+    }
+
 
     // Instantiate and configuration the controller
     auto controller = std::make_shared<ControllerFunctor<decltype(computeCommand),
