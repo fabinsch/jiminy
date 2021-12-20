@@ -54,6 +54,22 @@ namespace jiminy
             isInitialized_ = false;
         }
 
+        // Make sure the joint is not already attached to a transmission
+        auto robot = robot_.lock();
+        std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
+        for (std::string const & transmissionJoint : getJointNames())
+        {
+            auto transmissionJointIt = std::find(actuatedJointNames.begin(), actuatedJointNames.end(), transmissionJoint);
+            if (transmissionJointIt != actuatedJointNames.end())
+            {
+                PRINT_ERROR("Joint already attached to another transmission");
+                return hresult_t::ERROR_GENERIC;
+            }
+
+            // Update list of actuated joints
+            robot->addActuatedJointName(transmissionJoint)
+        }
+
         return returnCode;
     }
 
@@ -73,19 +89,6 @@ namespace jiminy
             return hresult_t::ERROR_GENERIC;
         }
 
-        // TODO Make sure the joint is not already attached to a transmission
-        // WARNING at this point it is still not know which joint or motor the transmision connects ? Or is it ?
-        // auto robotTemp = robot.lock();
-        // std::vector<std::string> actuatedJointNames = robotTemp->getActuatedJointNames();
-        // for (std::string const & transmissionJoint : getJointNames())
-        // {
-        //     auto transmissionJointIt = std::find(actuatedJointNames.begin(), actuatedJointNames.end(), transmissionJoint);
-        //     if (transmissionJointIt != actuatedJointNames.end())
-        //     {
-        //         PRINT_ERROR("Joint already attached to another transmission");
-        //         return hresult_t::ERROR_GENERIC;
-        //     }
-        // }
 
         // Copy references to the robot and shared data
         robot_ = robot;

@@ -1490,10 +1490,17 @@ namespace jiminy
             // refreshTransmissionProxies();
         }
 
-        // update list of actuated joints
-        // std::vector<std::string> const & jointNames = transmission->getJointNames();  // TODO still not available, just after init
-        // actuatedJointNames_.insert(actuatedJointNames_.end(), jointNames.begin(), jointNames.end());
-
         return returnCode;
+    }
+
+    std::vector<std::string> const & Robot::getActuatedJointNames(void) const
+    {
+        return actuatedJointNames_;
+    }
+
+    // TODO this here is not working if called from the transmission..
+    void Robot::addActuatedJointName(std::string const & jointName)
+    {
+        actuatedJointNames_.push_back(jointName);
     }
 }
