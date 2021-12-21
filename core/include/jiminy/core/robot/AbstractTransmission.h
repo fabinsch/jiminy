@@ -138,7 +138,7 @@ namespace jiminy
         ///
         /// \details    These are the indices of the joints associated with the transmission in the kinematic tree.
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        std::vector<jointIndex_t >const & getJointModelIndices(void) const;
+        std::vector<jointIndex_t > const & getJointModelIndices(void) const;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Get jointTypes_.
@@ -241,7 +241,7 @@ namespace jiminy
         /// \param[out] out      Jacobian transforming quantities from motor to joint level
         ///////////////////////////////////////////////////////////////////////////////////////////////
         virtual void computeJacobian(vectorN_t const & qMotors,
-                                     matrixN_t & Jac) = 0;
+                                     matrixN_t & J) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Compute the inverse jacobian to transform vel, acc, effort from joint to motor level.
@@ -253,7 +253,7 @@ namespace jiminy
         /// \param[out] out      Matrix transforming quantities from joint to motor level
         ///////////////////////////////////////////////////////////////////////////////////////////////
         virtual void computeInverseJacobian(vectorN_t const & qJoints,
-                                            matrixN_t & Jac) = 0;
+                                            matrixN_t & Jinv) = 0;
 
     protected:
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -283,8 +283,8 @@ namespace jiminy
         /// \param[in]  qMotors   Vector containing position of all joints in the model
         /// \param[in]  qJoint    Vector containing position of all motors in the model
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        virtual void computeInverseTransform(vectorN_t       & qMotors,
-                                             vectorN_t const & qJoints) = 0;
+        virtual void computeInverseTransform(vectorN_t const & qJoints,
+                                             vectorN_t       & qMotors) = 0;
     private:
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief    Attach the transmission to a robot
@@ -314,10 +314,10 @@ namespace jiminy
         std::vector<int32_t> jointPositionIndices_;                  ///< Indices of the joint position
         std::vector<int32_t> jointVelocityIndices_;                  ///< Indices of the joint velocities
         std::vector<std::string> motorNames_;                        ///< Names of the connected motors
-        std::vector<std::size_t> motorIndices_;                          ///< Indices of the connected motors in the buffer
+        std::vector<std::size_t> motorIndices_;                      ///< Indices of the connected motors in the buffer
         std::vector<std::weak_ptr<AbstractMotorBase> > motors_;      ///< Buffer holding all connected motors
-        matrixN_t forwardJacobian_;                                 ///< Transformation matrix from motor to joint quantities
-        matrixN_t backwardJacobian_;                                ///< Transformation matrix from joint to motor quantities
+        matrixN_t forwardJacobian_;                                  ///< Transformation matrix from motor to joint quantities
+        matrixN_t backwardJacobian_;                                 ///< Transformation matrix from joint to motor quantities
     };
 }
 

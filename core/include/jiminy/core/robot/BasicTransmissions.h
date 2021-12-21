@@ -50,8 +50,8 @@ namespace jiminy
     private:
         virtual void computeTransform(vectorN_t const & qMotors,
                                       vectorN_t       & qJoints) final override;
-        virtual void computeInverseTransform(vectorN_t       & qMotors,
-                                             vectorN_t const & qJoints) final override;
+        virtual void computeInverseTransform(vectorN_t const & qJoints,
+                                             vectorN_t       & qMotors) final override;
 
         virtual void computeEffortTransmission(void) final override;
     };

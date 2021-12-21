@@ -1440,6 +1440,16 @@ namespace jiminy
         return nmotors_;
     }
 
+    hresult_t Robot::refreshTransmissionProxies(void)
+    {
+        // TODO check for all attached transmission, check the motors and joints and add the actuatedJoints
+        for (auto transmission : transmissionsHolder_)
+        {
+            // TODO
+        }
+        return hresult_t::SUCCESS;
+    }
+
     hresult_t Robot::attachTransmission(std::shared_ptr<AbstractTransmissionBase> transmission)
     {
         hresult_t returnCode = hresult_t::SUCCESS;
@@ -1486,8 +1496,8 @@ namespace jiminy
             // Add the transmission to the holder
             transmissionsHolder_.push_back(transmission);
 
-            // TODO Refresh the transmissions proxies
-            // refreshTransmissionProxies();
+            // Refresh the transmissions proxies
+            refreshTransmissionProxies();
         }
 
         return returnCode;
@@ -1496,11 +1506,5 @@ namespace jiminy
     std::vector<std::string> const & Robot::getActuatedJointNames(void) const
     {
         return actuatedJointNames_;
-    }
-
-    // TODO this here is not working if called from the transmission..
-    void Robot::addActuatedJointName(std::string const & jointName)
-    {
-        actuatedJointNames_.push_back(jointName);
     }
 }

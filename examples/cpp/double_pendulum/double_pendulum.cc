@@ -90,8 +90,9 @@ int main(int /* argc */, char_t * /* argv */[])
         std::cout<< "transmission attached" <<std::endl;
         transmission->initialize(motorJointNames, motorJointNames);
         std::cout<< "transmission initialized" <<std::endl;
+        std::cout<< "Print out:" <<std::endl;
+        for (std::string j : robot->getActuatedJointNames()){std::cout << j << std::endl;}
     }
-
 
     // Instantiate and configuration the controller
     auto controller = std::make_shared<ControllerFunctor<decltype(computeCommand),

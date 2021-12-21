@@ -145,9 +145,8 @@ namespace jiminy
         hresult_t getTransmission(std::string const & transmissionName,
                                   std::shared_ptr<AbstractTransmissionBase> & transmission);
         transmissionsHolder_t const & getTransmissions(void) const;
-        vectorN_t const & getMotorsEffortLimits(void) const;  // TODO what is this for
+        vectorN_t const & getMotorsEffortLimits(void) const;
         std::vector<std::string> const & getActuatedJointNames(void) const;
-        void addActuatedJointName(std::string const & jointName);
 
     protected:
         hresult_t refreshMotorsProxies(void);

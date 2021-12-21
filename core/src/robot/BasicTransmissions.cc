@@ -35,8 +35,8 @@ namespace jiminy
     {
         // TODO
     }
-    void SimpleTransmission::computeInverseTransform(vectorN_t       & /*qMotors*/,
-                                                     vectorN_t const & /*qJoints*/)
+    void SimpleTransmission::computeInverseTransform(vectorN_t const & /*qJoints*/,
+                                                     vectorN_t       & /*qMotors*/)
     {
         // TODO
     }
