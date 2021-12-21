@@ -291,7 +291,8 @@ namespace jiminy
         ///
         /// \details  This method must be called before initializing the transmission.
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        hresult_t attach(std::weak_ptr<Robot const> robot);
+        hresult_t attach(std::weak_ptr<Robot const> robot,
+                         std::function<hresult_t(AbstractTransmissionBase & /*transmission*/)> notifyRobot);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief    Detach the transmission from the robot
@@ -302,22 +303,23 @@ namespace jiminy
         std::unique_ptr<abstractTransmissionOptions_t const> baseTransmissionOptions_;  ///< Structure with the parameters of the transmission
 
     protected:
-        configHolder_t transmissionOptionsHolder_;                   ///< Dictionary with the parameters of the transmission
-        bool_t isInitialized_;                                       ///< Flag to determine whether the transmission has been initialized or not
-        bool_t isAttached_;                                          ///< Flag to determine whether the transmission is attached to a robot
-        std::weak_ptr<Robot const> robot_;                           ///< Robot for which the command and internal dynamics
-        std::string name_;                                           ///< Name of the transmission
-        int32_t transmissionIdx_;                                    ///< Index of the transmission in the transmission buffer
-        std::vector<std::string> jointNames_;                        ///< Names of the connected joints
-        std::vector<jointIndex_t> jointModelIndices_;                ///< Indices of the connected joints in the full model
-        std::vector<joint_t> jointTypes_;                            ///< Types of the connected joints
-        std::vector<int32_t> jointPositionIndices_;                  ///< Indices of the joint position
-        std::vector<int32_t> jointVelocityIndices_;                  ///< Indices of the joint velocities
-        std::vector<std::string> motorNames_;                        ///< Names of the connected motors
-        std::vector<std::size_t> motorIndices_;                      ///< Indices of the connected motors in the buffer
-        std::vector<std::weak_ptr<AbstractMotorBase> > motors_;      ///< Buffer holding all connected motors
-        matrixN_t forwardJacobian_;                                  ///< Transformation matrix from motor to joint quantities
-        matrixN_t backwardJacobian_;                                 ///< Transformation matrix from joint to motor quantities
+        configHolder_t transmissionOptionsHolder_;                            ///< Dictionary with the parameters of the transmission
+        bool_t isInitialized_;                                                ///< Flag to determine whether the transmission has been initialized or not
+        bool_t isAttached_;                                                   ///< Flag to determine whether the transmission is attached to a robot
+        std::weak_ptr<Robot const> robot_;                                    ///< Robot for which the command and internal dynamics
+        std::function<hresult_t(AbstractTransmissionBase &)> notifyRobot_;    ///< Notify the robot which joints are actuated
+        std::string name_;                                                    ///< Name of the transmission
+        int32_t transmissionIdx_;                                             ///< Index of the transmission in the transmission buffer
+        std::vector<std::string> jointNames_;                                 ///< Names of the connected joints
+        std::vector<jointIndex_t> jointModelIndices_;                         ///< Indices of the connected joints in the full model
+        std::vector<joint_t> jointTypes_;                                     ///< Types of the connected joints
+        std::vector<int32_t> jointPositionIndices_;                           ///< Indices of the joint position
+        std::vector<int32_t> jointVelocityIndices_;                           ///< Indices of the joint velocities
+        std::vector<std::string> motorNames_;                                 ///< Names of the connected motors
+        std::vector<std::size_t> motorIndices_;                               ///< Indices of the connected motors in the buffer
+        std::vector<std::weak_ptr<AbstractMotorBase> > motors_;               ///< Buffer holding all connected motors
+        matrixN_t forwardJacobian_;                                           ///< Transformation matrix from motor to joint quantities
+        matrixN_t backwardJacobian_;                                          ///< Transformation matrix from joint to motor quantities
     };
 }
 

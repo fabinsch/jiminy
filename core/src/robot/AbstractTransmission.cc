@@ -13,6 +13,7 @@ namespace jiminy
     isInitialized_(false),
     isAttached_(false),
     robot_(),
+    notifyRobot_(),
     name_(name),
     transmissionIdx_(-1),
     jointNames_(),
@@ -54,6 +55,8 @@ namespace jiminy
             isInitialized_ = false;
         }
 
+        // TODO check whether transmission is invertible or not
+
         // Make sure the joint is not already attached to a transmission
         auto robot = robot_.lock();
         std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
@@ -67,10 +70,16 @@ namespace jiminy
             }
         }
 
+        // Propagte the actuated joints
+        if (notifyRobot_)
+            {
+                returnCode = notifyRobot_(*this);
+            }
         return returnCode;
     }
 
-    hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot)
+    hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot,
+                                               std::function<hresult_t(AbstractTransmissionBase & /*tranmission*/)> notifyRobot)
     {
         // Make sure the transmission is not already attached
         if (isAttached_)
@@ -89,6 +98,7 @@ namespace jiminy
 
         // Copy references to the robot and shared data
         robot_ = robot;
+        notifyRobot_ = notifyRobot;
 
         // Update the flag
         isAttached_ = true;
@@ -106,11 +116,13 @@ namespace jiminy
 
         // Clear the references to the robot
         robot_.reset();
+        notifyRobot_ = nullptr;
 
         // Unset the Id
         transmissionIdx_ = -1;
 
-        // TODO Delete motor and joint references
+        // Delete reference to motors
+        motors_.clear();
 
         // Update the flag
         isAttached_ = false;
@@ -209,13 +221,13 @@ namespace jiminy
             if (returnCode == hresult_t::SUCCESS)
             {
                 returnCode = robot->getMotor(motorName, motor);
-                auto motorTemp = motor.lock();
-                if (!motorTemp)
+                auto motorPtr = motor.lock();
+                if (!motorPtr)
                 {
                     PRINT_ERROR("No motor found with this name.");
                     returnCode = hresult_t::ERROR_GENERIC;
                 }
-                std::size_t idx = (motorTemp->getIdx());
+                std::size_t idx = (motorPtr->getIdx());
                 motorIndices_.push_back(idx);
             }
         }
