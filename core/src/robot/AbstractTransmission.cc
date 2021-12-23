@@ -70,18 +70,18 @@ namespace jiminy
             }
         }
 
-        // Propagte the actuated joints
+        // Propagate the actuated joints
         if (notifyRobot_)
-            {
-                // problem here, it does not work I think it is the const
-                returnCode = notifyRobot_(actuatedJointNames, robot->getTransmissions());
-            }
+        {
+            // problem here, it does not work I think it is the const
+            returnCode = notifyRobot_(*this);
+        }
+
         return returnCode;
     }
 
     hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot,
-                                               std::function<hresult_t(std::vector<std::string> & /*actuatedJointNames*/,
-                                                                       transmissionsHolder_t & /*transmissionsHolder*/)> notifyRobot)
+                                               std::function<hresult_t(AbstractTransmissionBase & /* transmission */)> notifyRobot)
     {
         // Make sure the transmission is not already attached
         if (isAttached_)

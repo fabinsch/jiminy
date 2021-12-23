@@ -179,7 +179,8 @@ namespace jiminy
         {
             // Define robot notification method, responsible for updating the robot if
             // necessary after changing the motor parameters, for example the armature.
-            auto notifyRobot = [robot_=std::weak_ptr<Robot>(shared_from_this())](AbstractMotorBase & motorIn)
+            auto notifyRobot = [this,robot_=std::weak_ptr<Robot>(shared_from_this())](
+                    AbstractMotorBase & motorIn)
                 {
                     // Make sure the robot still exists
                     auto robot = robot_.lock();
@@ -193,10 +194,10 @@ namespace jiminy
                     float64_t const & armature = motorIn.getArmature();
                     std::string const & jointName = motorIn.getJointName();
                     int32_t jointVelocityIdx;
-                    ::jiminy::getJointVelocityIdx(robot->pncModel_, jointName, jointVelocityIdx);
-                    robot->pncModel_.rotorInertia[jointVelocityIdx] = armature;
-                    ::jiminy::getJointVelocityIdx(robot->pncModelOrig_, jointName, jointVelocityIdx);
-                    robot->pncModelOrig_.rotorInertia[jointVelocityIdx] = armature;
+                    ::jiminy::getJointVelocityIdx(pncModel_, jointName, jointVelocityIdx);
+                    pncModel_.rotorInertia[jointVelocityIdx] = armature;
+                    ::jiminy::getJointVelocityIdx(pncModelOrig_, jointName, jointVelocityIdx);
+                    pncModelOrig_.rotorInertia[jointVelocityIdx] = armature;
                     return hresult_t::SUCCESS;
                 };
 
@@ -1505,8 +1506,8 @@ namespace jiminy
         }
 
         // Define robot notification method, responsible for updating the actuated joints
-        auto notifyRobot = [robot_=std::weak_ptr<Robot>(shared_from_this())]
-               (std::vector<std::string> & actuatedJointNames, transmissionsHolder_t & transmissionsHolder)
+        auto notifyRobot = [this,robot_=std::weak_ptr<Robot>(shared_from_this())](
+                AbstractTransmissionBase & /* transmissionIn */)
             {
                 // Make sure the robot still exists
                 auto robot = robot_.lock();
@@ -1515,21 +1516,21 @@ namespace jiminy
                     PRINT_ERROR("Robot has been deleted. Impossible to notify transmission update.");
                     return hresult_t::ERROR_GENERIC;
                 }
-                actuatedJointNames.clear();
-                for (auto transmissionIt : transmissionsHolder)
+
+                actuatedJointNames_.clear();
+                for (auto transmissionIt : transmissionsHolder_)
                 {
                     std::vector<std::string> joints = transmissionIt->getJointNames();
-                    actuatedJointNames.insert(actuatedJointNames.end(), joints.begin(), joints.end());
+                    actuatedJointNames_.insert(actuatedJointNames_.end(), joints.begin(), joints.end());
                 }
-                robot->refreshTransmissionProxies();
+
                 return hresult_t::SUCCESS;
             };
 
         if (returnCode == hresult_t::SUCCESS)
         {
             // Attach the transmission
-            returnCode = transmission->attach(shared_from_this(),
-                                              notifyRobot);
+            returnCode = transmission->attach(shared_from_this(), notifyRobot);
         }
 
         if (returnCode == hresult_t::SUCCESS)

@@ -281,7 +281,7 @@ namespace jiminy
         /// \details  This method must be called before initializing the sensor.
         ///////////////////////////////////////////////////////////////////////////////////////////////
         hresult_t attach(std::weak_ptr<Robot const> robot,
-                         std::function<hresult_t(AbstractMotorBase & /*motor*/)> notifyRobot,
+                         std::function<hresult_t(AbstractMotorBase & /* motor */)> notifyRobot,
                          MotorSharedDataHolder_t * sharedHolder);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
