@@ -52,6 +52,9 @@ namespace jiminy
                 // Empty.
             }
         };
+    public:
+        // Necessary for notifyRobot method
+        using transmissionsHolder_t = std::vector<std::shared_ptr<AbstractTransmissionBase> >;
 
     public:
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,7 +295,8 @@ namespace jiminy
         /// \details  This method must be called before initializing the transmission.
         ///////////////////////////////////////////////////////////////////////////////////////////////
         hresult_t attach(std::weak_ptr<Robot const> robot,
-                         std::function<hresult_t(AbstractTransmissionBase & /*transmission*/)> notifyRobot);
+                         std::function<hresult_t(std::vector<std::string> & /*actuatedJointNames*/,
+                                                 transmissionsHolder_t & /*transmissionsHolder*/)> notifyRobot);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief    Detach the transmission from the robot
@@ -307,7 +311,7 @@ namespace jiminy
         bool_t isInitialized_;                                                ///< Flag to determine whether the transmission has been initialized or not
         bool_t isAttached_;                                                   ///< Flag to determine whether the transmission is attached to a robot
         std::weak_ptr<Robot const> robot_;                                    ///< Robot for which the command and internal dynamics
-        std::function<hresult_t(AbstractTransmissionBase &)> notifyRobot_;    ///< Notify the robot which joints are actuated
+        std::function<hresult_t(std::vector<std::string> & /*actuatedJointNames*/, transmissionsHolder_t & /*transmissionsHolder*/)> notifyRobot_;  ///< Notify the robot which joints are actuated
         std::string name_;                                                    ///< Name of the transmission
         int32_t transmissionIdx_;                                             ///< Index of the transmission in the transmission buffer
         std::vector<std::string> jointNames_;                                 ///< Names of the connected joints

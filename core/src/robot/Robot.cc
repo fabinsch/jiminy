@@ -1442,13 +1442,30 @@ namespace jiminy
 
     hresult_t Robot::refreshTransmissionProxies(void)
     {
-        actuatedJointNames_.clear();
-        // TODO check for all attached transmission, check the motors and joints and add the actuatedJoints
-        for (auto transmission : transmissionsHolder_)
+        hresult_t returnCode = hresult_t::SUCCESS;
+
+        if (!isInitialized_)
         {
-            std::vector<std::string> joints = transmission->getJointNames();
-            actuatedJointNames_.insert(actuatedJointNames_.end(), joints.begin(), joints.end());
+            PRINT_ERROR("Robot not initialized.");
+            returnCode = hresult_t::ERROR_INIT_FAILED;
         }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Determine the number of motors
+            std::size_t ntransmissions = transmissionsHolder_.size();
+
+            // Extract the motor names
+            transmissionsNames_.clear();
+            transmissionsNames_.reserve(ntransmissions);
+            std::transform(transmissionsHolder_.begin(), transmissionsHolder_.end(),
+                           std::back_inserter(transmissionsNames_),
+                           [](auto const & elem) -> std::string
+                           {
+                               return elem->getName();
+                           });
+        }
+
         return hresult_t::SUCCESS;
     }
 
@@ -1488,7 +1505,8 @@ namespace jiminy
         }
 
         // Define robot notification method, responsible for updating the actuated joints
-        auto notifyRobot = [robot_=std::weak_ptr<Robot>(shared_from_this())](AbstractTransmissionBase & /*transmissionIn*/)
+        auto notifyRobot = [robot_=std::weak_ptr<Robot>(shared_from_this())]
+               (std::vector<std::string> & actuatedJointNames, transmissionsHolder_t & transmissionsHolder)
             {
                 // Make sure the robot still exists
                 auto robot = robot_.lock();
@@ -1497,7 +1515,12 @@ namespace jiminy
                     PRINT_ERROR("Robot has been deleted. Impossible to notify transmission update.");
                     return hresult_t::ERROR_GENERIC;
                 }
-
+                actuatedJointNames.clear();
+                for (auto transmissionIt : transmissionsHolder)
+                {
+                    std::vector<std::string> joints = transmissionIt->getJointNames();
+                    actuatedJointNames.insert(actuatedJointNames.end(), joints.begin(), joints.end());
+                }
                 robot->refreshTransmissionProxies();
                 return hresult_t::SUCCESS;
             };

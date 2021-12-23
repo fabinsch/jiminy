@@ -73,13 +73,15 @@ namespace jiminy
         // Propagte the actuated joints
         if (notifyRobot_)
             {
-                returnCode = notifyRobot_(*this);
+                // problem here, it does not work I think it is the const
+                returnCode = notifyRobot_(actuatedJointNames, robot->getTransmissions());
             }
         return returnCode;
     }
 
     hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot,
-                                               std::function<hresult_t(AbstractTransmissionBase & /*tranmission*/)> notifyRobot)
+                                               std::function<hresult_t(std::vector<std::string> & /*actuatedJointNames*/,
+                                                                       transmissionsHolder_t & /*transmissionsHolder*/)> notifyRobot)
     {
         // Make sure the transmission is not already attached
         if (isAttached_)
@@ -121,11 +123,18 @@ namespace jiminy
         // Unset the Id
         transmissionIdx_ = -1;
 
-        // Delete reference to motors
-        motors_.clear();
+        // Reset constant members
+        jointNames_.clear();
+        jointModelIndices_.clear();
+        jointTypes_.clear();
+        jointPositionIndices_.clear();
+        jointVelocityIndices_.clear();
+        motorNames_.clear();
+        motorIndices_.clear();
 
-        // Update the flag
+        // Update the flags
         isAttached_ = false;
+        isInitialized_ = false;
 
         return hresult_t::SUCCESS;
     }
