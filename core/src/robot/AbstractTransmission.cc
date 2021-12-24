@@ -13,7 +13,6 @@ namespace jiminy
     isInitialized_(false),
     isAttached_(false),
     robot_(),
-    notifyRobot_(),
     name_(name),
     transmissionIdx_(-1),
     jointNames_(),
@@ -70,18 +69,10 @@ namespace jiminy
             }
         }
 
-        // Propagate the actuated joints
-        if (notifyRobot_)
-        {
-            // problem here, it does not work I think it is the const
-            returnCode = notifyRobot_(*this);
-        }
-
         return returnCode;
     }
 
-    hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot,
-                                               std::function<hresult_t(AbstractTransmissionBase & /* transmission */)> notifyRobot)
+    hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot)
     {
         // Make sure the transmission is not already attached
         if (isAttached_)
@@ -100,7 +91,6 @@ namespace jiminy
 
         // Copy references to the robot and shared data
         robot_ = robot;
-        notifyRobot_ = notifyRobot;
 
         // Update the flag
         isAttached_ = true;
@@ -118,7 +108,6 @@ namespace jiminy
 
         // Clear the references to the robot
         robot_.reset();
-        notifyRobot_ = nullptr;
 
         // Unset the Id
         transmissionIdx_ = -1;

@@ -1505,32 +1505,10 @@ namespace jiminy
             }
         }
 
-        // Define robot notification method, responsible for updating the actuated joints
-        auto notifyRobot = [this,robot_=std::weak_ptr<Robot>(shared_from_this())](
-                AbstractTransmissionBase & /* transmissionIn */)
-            {
-                // Make sure the robot still exists
-                auto robot = robot_.lock();
-                if (!robot)
-                {
-                    PRINT_ERROR("Robot has been deleted. Impossible to notify transmission update.");
-                    return hresult_t::ERROR_GENERIC;
-                }
-
-                actuatedJointNames_.clear();
-                for (auto transmissionIt : transmissionsHolder_)
-                {
-                    std::vector<std::string> joints = transmissionIt->getJointNames();
-                    actuatedJointNames_.insert(actuatedJointNames_.end(), joints.begin(), joints.end());
-                }
-
-                return hresult_t::SUCCESS;
-            };
-
         if (returnCode == hresult_t::SUCCESS)
         {
             // Attach the transmission
-            returnCode = transmission->attach(shared_from_this(), notifyRobot);
+            returnCode = transmission->attach(shared_from_this());
         }
 
         if (returnCode == hresult_t::SUCCESS)
@@ -1545,8 +1523,14 @@ namespace jiminy
         return returnCode;
     }
 
-    std::vector<std::string> const & Robot::getActuatedJointNames(void) const
+    std::vector<std::string> const Robot::getActuatedJointNames(void) const
     {
-        return actuatedJointNames_;
+        std::vector<std::string> actuatedJointNames;
+        for (auto transmissionIt : transmissionsHolder_)
+        {
+            std::vector<std::string> joints = transmissionIt->getJointNames();
+            actuatedJointNames.insert(actuatedJointNames.end(), joints.begin(), joints.end());
+        }
+        return actuatedJointNames;
     }
 }
