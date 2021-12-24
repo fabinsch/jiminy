@@ -178,29 +178,25 @@ namespace jiminy
             }
         }
 
-        std::transform(jointNames_.begin(), jointNames_.end(),
-                    std::back_inserter(jointModelIndices_),
-                    [&returnCode,&robot](std::string const & jointName) -> jointIndex_t
-                    {
-                        jointIndex_t jointIdx = -1;
-                        if (returnCode == hresult_t::SUCCESS)
-                        {
-                            returnCode = ::jiminy::getJointModelIdx(robot->pncModel_, jointName, jointIdx);
-                        }
-                        return jointIdx;
-                    });
+        jointIndex_t jointModelIdx;
+        for (unsigned int i = 0; i < jointNames_.size(); i++)
+        {
+            if (returnCode == hresult_t::SUCCESS)
+            {
+                returnCode = ::jiminy::getJointModelIdx(robot->pncModel_, jointNames_[i], jointModelIdx);
+                jointModelIndices_.push_back(jointModelIdx);
+            }
+        }
 
-        std::transform(jointModelIndices_.begin(), jointModelIndices_.end(),
-                    std::back_inserter(jointTypes_),
-                    [&returnCode,&robot](jointIndex_t const & jointModelIdx) -> joint_t
-                    {
-                        joint_t jointType;
-                        if (returnCode == hresult_t::SUCCESS)
-                        {
-                            returnCode = ::jiminy::getJointTypeFromIdx(robot->pncModel_, jointModelIdx, jointType);
-                        }
-                        return jointType;
-                    });
+        joint_t jointType;
+        for (unsigned int i = 0; i < jointNames_.size(); i++)
+        {
+            if (returnCode == hresult_t::SUCCESS)
+            {
+                returnCode = getJointTypeFromIdx(robot->pncModel_, jointModelIndices_[i], jointType);
+                jointTypes_.push_back(jointType);
+            }
+        }
 
         // Populate motorIndices_
         std::weak_ptr<AbstractMotorBase const> motor;

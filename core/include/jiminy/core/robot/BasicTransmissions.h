@@ -40,6 +40,9 @@ namespace jiminy
         auto shared_from_this() { return shared_from(this); }
         auto shared_from_this() const { return shared_from(this); }
 
+        virtual hresult_t initialize(std::vector<std::string> const & jointNames,
+                                     std::vector<std::string> const & motorNames);
+
         virtual hresult_t setOptions(configHolder_t const & transmissionOptions) final override;
 
         virtual void computeJacobian(vectorN_t const & qMotors,
