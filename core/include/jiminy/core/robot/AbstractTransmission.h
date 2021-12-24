@@ -252,7 +252,7 @@ namespace jiminy
         /// \param[in]  qJoints  Current position of the joints.
         /// \param[out] out      Matrix transforming quantities from joint to motor level
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        virtual void computeInverseJacobian(vectorN_t const & qJoints,
+        virtual void computeInverseJacobian(std::vector<vectorN_t> const & qJoints,
                                             matrixN_t & Jinv) = 0;
 
          ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ namespace jiminy
         /// \param[in]  qJoint    Vector containing position of all motors in the model
         ///////////////////////////////////////////////////////////////////////////////////////////////
         virtual void computeTransform(vectorN_t const & qMotors,
-                                      vectorN_t       & qJoints) = 0;
+                                      std::vector<vectorN_t> & qJoints) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Compute inverse transformation for positions.
@@ -293,8 +293,8 @@ namespace jiminy
         /// \param[in]  qMotors   Vector containing position of all joints in the model
         /// \param[in]  qJoint    Vector containing position of all motors in the model
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        virtual void computeInverseTransform(vectorN_t const & qJoints,
-                                             vectorN_t       & qMotors) = 0;
+        virtual void computeInverseTransform(std::vector<vectorN_t> const & qJoints,
+                                             vectorN_t & qMotors) = 0;
     private:
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief    Attach the transmission to a robot

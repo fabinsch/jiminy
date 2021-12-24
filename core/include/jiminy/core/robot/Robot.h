@@ -146,7 +146,7 @@ namespace jiminy
                                   std::shared_ptr<AbstractTransmissionBase> & transmission);
         transmissionsHolder_t const & getTransmissions(void) const;
         vectorN_t const & getMotorsEffortLimits(void) const;
-        std::vector<std::string> const getActuatedJointNames(void) const;
+        std::vector<std::string> getActuatedJointNames(void) const;
 
     protected:
         hresult_t refreshMotorsProxies(void);
@@ -167,7 +167,6 @@ namespace jiminy
         std::vector<std::string> commandFieldnames_;                                ///< Fieldnames of the command
         std::vector<std::string> motorEffortFieldnames_;                            ///< Fieldnames of the motors effort
         uint64_t nmotors_;                                                          ///< The number of motors
-        std::vector<std::string> actuatedJointNames_;                               ///< List of joints attached to a transmission
 
     private:
         std::unique_ptr<MutexLocal> mutexLocal_;

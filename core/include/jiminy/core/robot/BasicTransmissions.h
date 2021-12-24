@@ -43,15 +43,15 @@ namespace jiminy
         virtual hresult_t setOptions(configHolder_t const & transmissionOptions) final override;
 
         virtual void computeJacobian(vectorN_t const & qMotors,
-                                     matrixN_t & jac) final override;
+                                     matrixN_t & J) final override;
 
-        virtual void computeInverseJacobian(vectorN_t const & qJoints,
-                                            matrixN_t & jac) final override;
+        virtual void computeInverseJacobian(std::vector<vectorN_t> const & qJoints,
+                                            matrixN_t & Jinv) final override;
     private:
         virtual void computeTransform(vectorN_t const & qMotors,
-                                      vectorN_t       & qJoints) final override;
-        virtual void computeInverseTransform(vectorN_t const & qJoints,
-                                             vectorN_t       & qMotors) final override;
+                                      std::vector<vectorN_t> & qJoints) final override;
+        virtual void computeInverseTransform(std::vector<vectorN_t> const & qJoints,
+                                             vectorN_t & qMotors) final override;
 
         virtual void computeEffortTransmission(void) final override;
     };

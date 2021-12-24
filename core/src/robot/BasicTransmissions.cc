@@ -19,24 +19,24 @@ namespace jiminy
     }
 
     void SimpleTransmission::computeJacobian(vectorN_t const & /*q*/,
-                                             matrixN_t & /*Jac*/)
+                                             matrixN_t & /*J*/)
     {
         // TODO
     }
 
-    void SimpleTransmission::computeInverseJacobian(vectorN_t const & /*q*/,
-                                                    matrixN_t & /*Jac*/)
+    void SimpleTransmission::computeInverseJacobian(std::vector<vectorN_t> const & /*qJoints*/,
+                                                    matrixN_t & /*Jinv*/)
     {
         // TODO
     }
 
     void SimpleTransmission::computeTransform(vectorN_t const & /*qMotors*/,
-                                              vectorN_t       & /*qJoints*/)
+                                              std::vector<vectorN_t> & /*qJoints*/)
     {
         // TODO
     }
-    void SimpleTransmission::computeInverseTransform(vectorN_t const & /*qJoints*/,
-                                                     vectorN_t       & /*qMotors*/)
+    void SimpleTransmission::computeInverseTransform(std::vector<vectorN_t> const & /*qJoints*/,
+                                                     vectorN_t & /*qMotors*/)
     {
         // TODO
     }

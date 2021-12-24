@@ -41,6 +41,8 @@ namespace jiminy
     hresult_t AbstractTransmissionBase::initialize(std::vector<std::string> const & jointNames,
                                                    std::vector<std::string> const & motorNames)
     {
+        // TODO check whether transmission is invertible or not
+
         // Copy reference to joint and motors names
         hresult_t returnCode = hresult_t::SUCCESS;
         jointNames_ = jointNames;
@@ -54,12 +56,11 @@ namespace jiminy
             isInitialized_ = false;
         }
 
-        // TODO check whether transmission is invertible or not
 
         // Make sure the joint is not already attached to a transmission
         auto robot = robot_.lock();
         std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
-        for (std::string const & transmissionJoint : getJointNames())
+        for (std::string const & transmissionJoint : jointNames)
         {
             auto transmissionJointIt = std::find(actuatedJointNames.begin(), actuatedJointNames.end(), transmissionJoint);
             if (transmissionJointIt != actuatedJointNames.end())
@@ -177,40 +178,29 @@ namespace jiminy
             }
         }
 
-        jointIndex_t jointModelIdxTmp;
-        for (unsigned int i = 0; i < jointNames_.size(); i++)
-        {
-            if (returnCode == hresult_t::SUCCESS)
-            {
-                // jointModelIndices_ is empty at this point, therefore inject a 0 and later get the right index
-                jointModelIndices_.push_back(jointModelIdxTmp);
-                returnCode = ::jiminy::getJointModelIdx(robot->pncModel_, jointNames_[i], jointModelIndices_[i]);
-            }
-        }
+        std::transform(jointNames_.begin(), jointNames_.end(),
+                    std::back_inserter(jointModelIndices_),
+                    [&returnCode,&robot](std::string const & jointName) -> jointIndex_t
+                    {
+                        jointIndex_t jointIdx = -1;
+                        if (returnCode == hresult_t::SUCCESS)
+                        {
+                            returnCode = ::jiminy::getJointModelIdx(robot->pncModel_, jointName, jointIdx);
+                        }
+                        return jointIdx;
+                    });
 
-        joint_t jointType;
-        for (unsigned int i = 0; i < jointNames_.size(); i++)
-        {
-            if (returnCode == hresult_t::SUCCESS)
-            {
-                // jointTypes_ is empty at this point, therefore inject a 0 and later get the right type
-                jointTypes_.push_back(jointType);
-                returnCode = getJointTypeFromIdx(robot->pncModel_, jointModelIndices_[i], jointTypes_[i]);
-            }
-        }
-
-        for (unsigned int i = 0; i < jointNames_.size(); i++)
-        {
-            if (returnCode == hresult_t::SUCCESS)
-            {
-                // Transmissions are only supported for linear and rotary joints
-                if (jointTypes_[i] != joint_t::LINEAR && jointTypes_[i] != joint_t::ROTARY && jointTypes_[i] != joint_t::ROTARY_UNBOUNDED)
-                {
-                    PRINT_ERROR("A transmission can only be associated with a 1-dof linear or rotary joint.");
-                    returnCode = hresult_t::ERROR_BAD_INPUT;
-                }
-            }
-        }
+        std::transform(jointModelIndices_.begin(), jointModelIndices_.end(),
+                    std::back_inserter(jointTypes_),
+                    [&returnCode,&robot](jointIndex_t const & jointModelIdx) -> joint_t
+                    {
+                        joint_t jointType;
+                        if (returnCode == hresult_t::SUCCESS)
+                        {
+                            returnCode = ::jiminy::getJointTypeFromIdx(robot->pncModel_, jointModelIdx, jointType);
+                        }
+                        return jointType;
+                    });
 
         // Populate motorIndices_
         std::weak_ptr<AbstractMotorBase const> motor;
@@ -225,8 +215,8 @@ namespace jiminy
                     PRINT_ERROR("No motor found with this name.");
                     returnCode = hresult_t::ERROR_GENERIC;
                 }
-                std::size_t idx = (motorPtr->getIdx());
-                motorIndices_.push_back(idx);
+                std::size_t motorIdx = motorPtr->getIdx();
+                motorIndices_.push_back(motorIdx);
             }
         }
 
@@ -236,6 +226,7 @@ namespace jiminy
         for (std::string const & jointName : jointNames_)
         {
             std::vector<int32_t> jointPositionIdx;
+            std::vector<int32_t> jointVelocityIdx;
             if (!robot->pncModel_.existJointName(jointName))
             {
                 PRINT_ERROR("Joint '", jointName, "' not found in robot model.");
@@ -243,21 +234,13 @@ namespace jiminy
             }
             if (returnCode == hresult_t::SUCCESS)
             {
-                returnCode = getJointPositionIdx(robot->pncModel_, jointName, jointPositionIdx);
-            }
-            if (returnCode == hresult_t::SUCCESS)
-            {
-                jointPositionIndices_.insert(jointPositionIndices_.end(), jointPositionIdx.begin(), jointPositionIdx.end());
-            }
+                // Cannot fail if the joint exists
+                getJointPositionIdx(robot->pncModel_, jointName, jointPositionIdx);
+                getJointVelocityIdx(robot->pncModel_, jointName, jointVelocityIdx);
 
-            // Extract velocity indices
-            std::vector<int32_t> jointVelocityIdx;
-            jointIndex_t const & jointModelIdx = robot->pncModel_.getJointId(jointName);
-            int32_t const & jointVelocityFirstIdx = robot->pncModel_.joints[jointModelIdx].idx_v();
-            int32_t const & jointNv = robot->pncModel_.joints[jointModelIdx].nv();
-            jointVelocityIdx.resize(jointNv);
-            std::iota(jointVelocityIdx.begin(), jointVelocityIdx.end(), jointVelocityFirstIdx);
-            jointVelocityIndices_.insert(jointVelocityIndices_.end(), jointVelocityIdx.begin(), jointVelocityIdx.end());
+                jointPositionIndices_.insert(jointPositionIndices_.end(), jointPositionIdx.begin(), jointPositionIdx.end());
+                jointVelocityIndices_.insert(jointVelocityIndices_.end(), jointVelocityIdx.begin(), jointVelocityIdx.end());
+            }
         }
 
         return returnCode;
@@ -365,7 +348,7 @@ namespace jiminy
         backwardJacobian_.setZero();
 
         // // Update transmission scope information
-        this->refreshProxies();
+        refreshProxies();
 
         return hresult_t::SUCCESS;
     }

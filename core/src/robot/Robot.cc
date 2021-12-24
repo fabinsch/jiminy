@@ -31,7 +31,6 @@ namespace jiminy
     commandFieldnames_(),
     motorEffortFieldnames_(),
     nmotors_(0U),
-    actuatedJointNames_(),
     mutexLocal_(std::make_unique<MutexLocal>()),
     motorsSharedHolder_(std::make_shared<MotorSharedDataHolder_t>()),
     sensorsSharedHolder_()
@@ -185,8 +184,7 @@ namespace jiminy
         {
             // Define robot notification method, responsible for updating the robot if
             // necessary after changing the motor parameters, for example the armature.
-            auto notifyRobot = [this,robot_=std::weak_ptr<Robot>(shared_from_this())](
-                    AbstractMotorBase & motorIn)
+            auto notifyRobot = [robot_=std::weak_ptr<Robot>(shared_from_this())](AbstractMotorBase & motorIn)
                 {
                     // Make sure the robot still exists
                     auto robot = robot_.lock();
@@ -200,10 +198,10 @@ namespace jiminy
                     float64_t const & armature = motorIn.getArmature();
                     std::string const & jointName = motorIn.getJointName();
                     int32_t jointVelocityIdx;
-                    ::jiminy::getJointVelocityIdx(pncModel_, jointName, jointVelocityIdx);
-                    pncModel_.rotorInertia[jointVelocityIdx] = armature;
-                    ::jiminy::getJointVelocityIdx(pncModelOrig_, jointName, jointVelocityIdx);
-                    pncModelOrig_.rotorInertia[jointVelocityIdx] = armature;
+                    ::jiminy::getJointVelocityIdx(robot->pncModel_, jointName, jointVelocityIdx);
+                    robot->pncModel_.rotorInertia[jointVelocityIdx] = armature;
+                    ::jiminy::getJointVelocityIdx(robot->pncModelOrig_, jointName, jointVelocityIdx);
+                    robot->pncModelOrig_.rotorInertia[jointVelocityIdx] = armature;
                     return hresult_t::SUCCESS;
                 };
 
@@ -1529,7 +1527,7 @@ namespace jiminy
         return returnCode;
     }
 
-    std::vector<std::string> const Robot::getActuatedJointNames(void) const
+    std::vector<std::string> Robot::getActuatedJointNames(void) const
     {
         std::vector<std::string> actuatedJointNames;
         for (auto transmissionIt : transmissionsHolder_)
