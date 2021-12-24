@@ -345,4 +345,30 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
+    hresult_t AbstractTransmissionBase::reset(void)
+    {
+        // Make sure the motor is attached to a robot
+        if (!isAttached_)
+        {
+            PRINT_ERROR("Motor not attached to any robot.");
+            return hresult_t::ERROR_GENERIC;
+        }
+
+        // Make sure the robot still exists
+        if (robot_.expired())
+        {
+            PRINT_ERROR("Robot has been deleted. Impossible to reset the motors.");
+            return hresult_t::ERROR_GENERIC;
+        }
+
+        forwardJacobian_.setZero();
+        backwardJacobian_.setZero();
+
+        // // Update transmission scope information
+        this->refreshProxies();
+
+        return hresult_t::SUCCESS;
+    }
+
+
 }

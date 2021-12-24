@@ -92,6 +92,12 @@ namespace jiminy
             }
         }
 
+        // Reset the transmissions
+        if (!transmissionsHolder_.empty())
+        {
+            (*transmissionsHolder_.begin())->reset();
+        }
+
         // Reset the telemetry flag
         isTelemetryConfigured_ = false;
     }

@@ -255,6 +255,16 @@ namespace jiminy
         virtual void computeInverseJacobian(vectorN_t const & qJoints,
                                             matrixN_t & Jinv) = 0;
 
+         ///////////////////////////////////////////////////////////////////////////////////////////////
+        /// \brief    Reset the internal state of the transmission.
+        ///
+        /// \details  This method resets the internal state of the transmission.
+        ///
+        /// \remark   This method is not intended to be called manually. The Robot to which the
+        ///           transmission is added is taking care of it when its own `reset` method is called.
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        virtual hresult_t reset(void);
+
     protected:
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Compute energy dissipation in the transmission.
