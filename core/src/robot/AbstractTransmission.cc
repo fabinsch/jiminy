@@ -41,7 +41,20 @@ namespace jiminy
     hresult_t AbstractTransmissionBase::initialize(std::vector<std::string> const & jointNames,
                                                    std::vector<std::string> const & motorNames)
     {
-        // TODO check whether transmission is invertible or not
+        // Check whether transmission is invertible or not
+        auto robot = robot_.lock();
+        unsigned int nDofs = 0;
+        jointIndex_t jointModelIdx;
+        for (std::string jointName : jointNames)
+        {
+            ::jiminy::getJointModelIdx(robot->pncModel_, jointName, jointModelIdx);
+            nDofs += robot->pncModel_.joints[jointModelIdx].nv();
+        }
+        if (nDofs != motorNames.size())
+        {
+            PRINT_ERROR("No 1-to-1 mapping from motors to joints");
+            return hresult_t::ERROR_INIT_FAILED;
+        }
 
         // Copy reference to joint and motors names
         hresult_t returnCode = hresult_t::SUCCESS;
@@ -58,7 +71,6 @@ namespace jiminy
 
 
         // Make sure the joint is not already attached to a transmission
-        auto robot = robot_.lock();
         std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
         for (std::string const & transmissionJoint : jointNames)
         {
