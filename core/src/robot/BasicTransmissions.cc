@@ -8,7 +8,7 @@
 namespace jiminy
 {
     SimpleTransmission::SimpleTransmission(std::string const & name) :
-    AbstractTransmissionBase(name)
+    AbstractInvertibleTransmissionBase(name)
     {
         std::cout << "construct simple transmission" << std::endl;
     }
@@ -16,20 +16,29 @@ namespace jiminy
     hresult_t SimpleTransmission::initialize(std::vector<std::string> const & jointNames,
                                              std::vector<std::string> const & motorNames)
     {
+        hresult_t returnCode = hresult_t::SUCCESS;
         if (jointNames.size() != 1 || motorNames.size() != 1)
         {
             PRINT_ERROR("A simple transmission only supports 1-to-1 mappings of motors and joints.");
+            returnCode = hresult_t::ERROR_BAD_INPUT;
         }
 
-        // Transmissions are only supported for linear and rotary joints
-        if (jointTypes_[0] != joint_t::LINEAR && jointTypes_[0] != joint_t::ROTARY && jointTypes_[0] != joint_t::ROTARY_UNBOUNDED)
+        if (returnCode == hresult_t::SUCCESS)
         {
-            PRINT_ERROR("A transmission can only be associated with a 1-dof linear or rotary joint.");
-            return hresult_t::ERROR_BAD_INPUT;
+            returnCode = AbstractInvertibleTransmissionBase::initialize(jointNames, motorNames);
         }
 
-        return AbstractTransmissionBase::initialize(jointNames, motorNames);
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Transmissions are only supported for linear and rotary joints
+            if (jointTypes_[0] != joint_t::LINEAR && jointTypes_[0] != joint_t::ROTARY && jointTypes_[0] != joint_t::ROTARY_UNBOUNDED)
+            {
+                PRINT_ERROR("A transmission can only be associated with a 1-dof linear or rotary joint.");
+                returnCode = hresult_t::ERROR_BAD_INPUT;
+            }
+        }
 
+        return returnCode;
     }
 
     hresult_t SimpleTransmission::setOptions(configHolder_t const & /*transmissionOptions*/)

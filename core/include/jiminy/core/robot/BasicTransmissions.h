@@ -6,7 +6,7 @@
 
 namespace jiminy
 {
-    class SimpleTransmission : public AbstractTransmissionBase
+    class SimpleTransmission : public AbstractInvertibleTransmissionBase
     {
     public:
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,7 +15,7 @@ namespace jiminy
         virtual configHolder_t getDefaultTransmissionOptions(void) override
         {
             // Add extra options or update default values
-            configHolder_t config = AbstractTransmissionBase::getDefaultTransmissionOptions();
+            configHolder_t config = AbstractInvertibleTransmissionBase::getDefaultTransmissionOptions();
             config["mechanicalReduction"] = 0.0;
 
             return config;

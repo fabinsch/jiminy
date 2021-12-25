@@ -26,36 +26,36 @@ namespace python
         void visit(PyClass & cl) const
         {
             cl
-                .add_property("is_initialized", bp::make_function(&AbstractTransmissionBase::getIsInitialized,
+                .add_property("is_initialized", bp::make_function(&AbstractInvertibleTransmissionBase::getIsInitialized,
                                                 bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("name", bp::make_function(&AbstractTransmissionBase::getName,
+                .add_property("name", bp::make_function(&AbstractInvertibleTransmissionBase::getName,
                                         bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("idx", bp::make_function(&AbstractTransmissionBase::getIdx,
+                .add_property("idx", bp::make_function(&AbstractInvertibleTransmissionBase::getIdx,
                                         bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("joint_names", bp::make_function(&AbstractTransmissionBase::getJointNames,
+                .add_property("joint_names", bp::make_function(&AbstractInvertibleTransmissionBase::getJointNames,
                                              bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("joint_indices", bp::make_function(&AbstractTransmissionBase::getJointModelIndices,
+                .add_property("joint_indices", bp::make_function(&AbstractInvertibleTransmissionBase::getJointModelIndices,
                                                bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("joint_types", bp::make_function(&AbstractTransmissionBase::getJointTypes,
+                .add_property("joint_types", bp::make_function(&AbstractInvertibleTransmissionBase::getJointTypes,
                                              bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("joint_position_indices", bp::make_function(&AbstractTransmissionBase::getJointPositionIndices,
+                .add_property("joint_position_indices", bp::make_function(&AbstractInvertibleTransmissionBase::getJointPositionIndices,
                                                         bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("joint_velocity_indices", bp::make_function(&AbstractTransmissionBase::getJointVelocityIndices,
+                .add_property("joint_velocity_indices", bp::make_function(&AbstractInvertibleTransmissionBase::getJointVelocityIndices,
                                                         bp::return_value_policy<bp::copy_const_reference>()))
-                .add_property("jacobian", bp::make_function(&AbstractTransmissionBase::getJacobian,
+                .add_property("jacobian", bp::make_function(&AbstractInvertibleTransmissionBase::getJacobian,
                                                    bp::return_value_policy<result_converter<false> >()))
-                .add_property("inverse_jacobian", bp::make_function(&AbstractTransmissionBase::getInverseJacobian,
+                .add_property("inverse_jacobian", bp::make_function(&AbstractInvertibleTransmissionBase::getInverseJacobian,
                                                    bp::return_value_policy<result_converter<false> >()))
 
                 .def("set_options", &PyAbstractTransmissionVisitor::setOptions)
-                .def("get_options", &AbstractTransmissionBase::getOptions)
-                .def("compute_transform", &AbstractTransmissionBase::computeTransform)
-                .def("compute_inverse_transform", &AbstractTransmissionBase::computeInverseTransform)
+                .def("get_options", &AbstractInvertibleTransmissionBase::getOptions)
+                .def("compute_transform", &AbstractInvertibleTransmissionBase::computeTransform)
+                .def("compute_inverse_transform", &AbstractInvertibleTransmissionBase::computeInverseTransform)
                 ;
         }
 
     public:
-        static void setOptions(AbstractTransmissionBase       & self,
+        static void setOptions(AbstractInvertibleTransmissionBase       & self,
                                bp::dict          const & configPy)
         {
             configHolder_t config = self.getOptions();
@@ -68,8 +68,8 @@ namespace python
         ///////////////////////////////////////////////////////////////////////////////
         static void expose()
         {
-            bp::class_<AbstractTransmissionBase,
-                       std::shared_ptr<AbstractTransmissionBase>,
+            bp::class_<AbstractInvertibleTransmissionBase,
+                       std::shared_ptr<AbstractInvertibleTransmissionBase>,
                        boost::noncopyable>("AbstractTransmission", bp::no_init)
                 .def(PyAbstractTransmissionVisitor());
         }
@@ -113,7 +113,7 @@ namespace python
         ///////////////////////////////////////////////////////////////////////////////
         static void expose()
         {
-            bp::class_<SimpleTransmission, bp::bases<AbstractTransmissionBase>,
+            bp::class_<SimpleTransmission, bp::bases<AbstractInvertibleTransmissionBase>,
                        std::shared_ptr<SimpleTransmission>,
                        boost::noncopyable>("SimpleTransmission",
                        bp::init<std::string const &>(

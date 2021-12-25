@@ -94,7 +94,10 @@ namespace jiminy
         // Reset the transmissions
         if (!transmissionsHolder_.empty())
         {
-            (*transmissionsHolder_.begin())->reset();
+            for (auto & transmission : transmissionsHolder_)
+            {
+                transmission->reset();
+            }
         }
 
         // Reset the telemetry flag
@@ -1474,7 +1477,7 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
-    hresult_t Robot::attachTransmission(std::shared_ptr<AbstractTransmissionBase> transmission)
+    hresult_t Robot::attachTransmission(std::shared_ptr<AbstractInvertibleTransmissionBase> transmission)
     {
         hresult_t returnCode = hresult_t::SUCCESS;
 
@@ -1489,7 +1492,7 @@ namespace jiminy
             if (getIsLocked())
             {
                 PRINT_ERROR("Robot is locked, probably because a simulation is running. "
-                            "Please stop it before adding motors.");
+                            "Please stop it before adding transmissions.");
                 returnCode = hresult_t::ERROR_GENERIC;
             }
         }
@@ -1498,10 +1501,10 @@ namespace jiminy
         {
             std::string const & transmissionName = transmission->getName();
             auto transmissionIt = std::find_if(transmissionsHolder_.begin(), transmissionsHolder_.end(),
-                                        [&transmissionName](auto const & elem)
-                                        {
-                                            return (elem->getName() == transmissionName);
-                                        });
+                                               [&transmissionName](auto const & elem)
+                                               {
+                                                   return (elem->getName() == transmissionName);
+                                               });
             if (transmissionIt != transmissionsHolder_.end())
             {
                 PRINT_ERROR("A transmission with the same name already exists.");

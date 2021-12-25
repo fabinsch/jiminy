@@ -11,7 +11,7 @@ namespace jiminy
     class AbstractMotorBase;
     struct SensorSharedDataHolder_t;
     class AbstractSensorBase;
-    class AbstractTransmissionBase;
+    class AbstractInvertibleTransmissionBase;
     class TelemetryData;
     class MutexLocal;
     class LockGuardLocal;
@@ -23,7 +23,7 @@ namespace jiminy
         using sensorsHolder_t = std::vector<std::shared_ptr<AbstractSensorBase> >;
         using sensorsGroupHolder_t = std::unordered_map<std::string, sensorsHolder_t>;
         using sensorsSharedHolder_t = std::unordered_map<std::string, std::shared_ptr<SensorSharedDataHolder_t> >;
-        using transmissionsHolder_t = std::vector<std::shared_ptr<AbstractTransmissionBase> >;
+        using transmissionsHolder_t = std::vector<std::shared_ptr<AbstractInvertibleTransmissionBase> >;
 
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -139,11 +139,11 @@ namespace jiminy
         hresult_t getLock(std::unique_ptr<LockGuardLocal> & lock);
         bool_t const & getIsLocked(void) const;
 
-        hresult_t attachTransmission(std::shared_ptr<AbstractTransmissionBase> transmission);
+        hresult_t attachTransmission(std::shared_ptr<AbstractInvertibleTransmissionBase> transmission);
         hresult_t detachTransmission(std::string const & transmissionName);
         hresult_t detachTransmissions(std::vector<std::string> const & transmissionsNames = {});
         hresult_t getTransmission(std::string const & transmissionName,
-                                  std::shared_ptr<AbstractTransmissionBase> & transmission);
+                                  std::shared_ptr<AbstractInvertibleTransmissionBase> & transmission);
         transmissionsHolder_t const & getTransmissions(void) const;
         vectorN_t const & getMotorsEffortLimits(void) const;
         std::vector<std::string> getActuatedJointNames(void) const;

@@ -5,7 +5,7 @@
 /// \details    Any transmission must inherit from this base class and implement its virtual methods.
 ///
 /// \remark     Each transmission added to a Jiminy Robot is downcasted as an instance of
-///             AbstractTransmissionBase and polymorphism is used to call the actual implementations.
+///             AbstractInvertibleTransmissionBase and polymorphism is used to call the actual implementations.
 ///
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +23,7 @@ namespace jiminy
 {
     class Robot;
 
-    class AbstractTransmissionBase : public std::enable_shared_from_this<AbstractTransmissionBase>
+    class AbstractInvertibleTransmissionBase : public std::enable_shared_from_this<AbstractInvertibleTransmissionBase>
     {
         /* AKA AbstractSensorBase */
         friend Robot;
@@ -57,8 +57,8 @@ namespace jiminy
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Forbid the copy of the class
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        AbstractTransmissionBase(AbstractTransmissionBase const & abstractTransmission) = delete;
-        AbstractTransmissionBase & operator = (AbstractTransmissionBase const & other) = delete;
+        AbstractInvertibleTransmissionBase(AbstractInvertibleTransmissionBase const & abstractTransmission) = delete;
+        AbstractInvertibleTransmissionBase & operator = (AbstractInvertibleTransmissionBase const & other) = delete;
 
         auto shared_from_this() { return shared_from(this); }
         auto shared_from_this() const { return shared_from(this); }
@@ -69,8 +69,8 @@ namespace jiminy
         /// \param[in]  robot   Robot
         /// \param[in]  name    Name of the transmission
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        AbstractTransmissionBase(std::string const & name);
-        virtual ~AbstractTransmissionBase(void);
+        AbstractInvertibleTransmissionBase(std::string const & name);
+        virtual ~AbstractInvertibleTransmissionBase(void);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief    Initialize

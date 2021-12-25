@@ -7,7 +7,7 @@
 
 namespace jiminy
 {
-    AbstractTransmissionBase::AbstractTransmissionBase(std::string const & name) :
+    AbstractInvertibleTransmissionBase::AbstractInvertibleTransmissionBase(std::string const & name) :
     baseTransmissionOptions_(nullptr),
     transmissionOptionsHolder_(),
     isInitialized_(false),
@@ -29,7 +29,7 @@ namespace jiminy
         // TODO initialize the options
     }
 
-    AbstractTransmissionBase::~AbstractTransmissionBase(void)
+    AbstractInvertibleTransmissionBase::~AbstractInvertibleTransmissionBase(void)
     {
         // Detach the transmission before deleting it if necessary
         if (isAttached_)
@@ -38,54 +38,85 @@ namespace jiminy
         }
     }
 
-    hresult_t AbstractTransmissionBase::initialize(std::vector<std::string> const & jointNames,
+    hresult_t AbstractInvertibleTransmissionBase::initialize(std::vector<std::string> const & jointNames,
                                                    std::vector<std::string> const & motorNames)
     {
         // Check whether transmission is invertible or not
         auto robot = robot_.lock();
-        unsigned int nDofs = 0;
-        jointIndex_t jointModelIdx;
-        for (std::string jointName : jointNames)
+        hresult_t returnCode = hresult_t::SUCCESS;
+        if (!robot)
+            {
+                PRINT_ERROR("Robot has been deleted. Impossible to refresh proxies.");
+                returnCode = hresult_t::ERROR_GENERIC;
+            }
+
+        if (returnCode == hresult_t::SUCCESS)
         {
-            ::jiminy::getJointModelIdx(robot->pncModel_, jointName, jointModelIdx);
-            nDofs += robot->pncModel_.joints[jointModelIdx].nv();
-        }
-        if (nDofs != motorNames.size())
-        {
-            PRINT_ERROR("No 1-to-1 mapping from motors to joints");
-            return hresult_t::ERROR_INIT_FAILED;
+            uint32_t nDofs = 0;
+            jointIndex_t jointModelIdx;
+            for (std::string jointName : jointNames)
+            {
+                ::jiminy::getJointModelIdx(robot->pncModel_, jointName, jointModelIdx);
+                nDofs += robot->pncModel_.joints[jointModelIdx].nv();
+            }
+            // Each motor corresponds to one degree of freedom
+            if (nDofs != motorNames.size())
+            {
+                PRINT_ERROR("Not n-to-n invertible transmission.");
+                returnCode = hresult_t::ERROR_INIT_FAILED;
+            }
         }
 
-        // Copy reference to joint and motors names
-        hresult_t returnCode = hresult_t::SUCCESS;
-        jointNames_ = jointNames;
-        motorNames_ = motorNames;
-        isInitialized_ = true;
-        returnCode = refreshProxies();
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Make sure the joint is not already attached to a transmission
+            std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
+            for (std::string const & transmissionJoint : jointNames)
+            {
+                auto transmissionJointIt = std::find(actuatedJointNames.begin(), actuatedJointNames.end(), transmissionJoint);
+                if (transmissionJointIt != actuatedJointNames.end())
+                {
+                    PRINT_ERROR("Joint already attached to another transmission");
+                    returnCode = hresult_t::ERROR_GENERIC;
+                }
+            }
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Copy reference to joint and motors names
+            jointNames_ = jointNames;
+            motorNames_ = motorNames;
+            isInitialized_ = true;
+            returnCode = refreshProxies();
+        }
+
         if (returnCode != hresult_t::SUCCESS)
         {
+            // Clear the references to the robot
+            robot_.reset();
+
+            // Unset the Id
+            transmissionIdx_ = -1;
+
+            // Reset constant members
             jointNames_.clear();
+            jointModelIndices_.clear();
+            jointTypes_.clear();
+            jointPositionIndices_.clear();
+            jointVelocityIndices_.clear();
             motorNames_.clear();
+            motorIndices_.clear();
+
+            // Update the flags
+            isAttached_ = false;
             isInitialized_ = false;
-        }
-
-
-        // Make sure the joint is not already attached to a transmission
-        std::vector<std::string> actuatedJointNames = robot->getActuatedJointNames();
-        for (std::string const & transmissionJoint : jointNames)
-        {
-            auto transmissionJointIt = std::find(actuatedJointNames.begin(), actuatedJointNames.end(), transmissionJoint);
-            if (transmissionJointIt != actuatedJointNames.end())
-            {
-                PRINT_ERROR("Joint already attached to another transmission");
-                return hresult_t::ERROR_GENERIC;
-            }
         }
 
         return returnCode;
     }
 
-    hresult_t AbstractTransmissionBase::attach(std::weak_ptr<Robot const> robot)
+    hresult_t AbstractInvertibleTransmissionBase::attach(std::weak_ptr<Robot const> robot)
     {
         // Make sure the transmission is not already attached
         if (isAttached_)
@@ -111,7 +142,7 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
-    hresult_t AbstractTransmissionBase::detach(void)
+    hresult_t AbstractInvertibleTransmissionBase::detach(void)
     {
         if (!isAttached_)
         {
@@ -141,18 +172,18 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
-    hresult_t AbstractTransmissionBase::setOptions(configHolder_t const & /*transmissionOptions*/)
+    hresult_t AbstractInvertibleTransmissionBase::setOptions(configHolder_t const & /*transmissionOptions*/)
     {
         // TODO SetOptions
         return hresult_t::SUCCESS;
     }
 
-    configHolder_t AbstractTransmissionBase::getOptions(void) const
+    configHolder_t AbstractInvertibleTransmissionBase::getOptions(void) const
     {
         return transmissionOptionsHolder_;
     }
 
-    hresult_t AbstractTransmissionBase::refreshProxies(void)
+    hresult_t AbstractInvertibleTransmissionBase::refreshProxies(void)
     {
         hresult_t returnCode = hresult_t::SUCCESS;
 
@@ -254,68 +285,68 @@ namespace jiminy
         return returnCode;
     }
 
-    bool_t const & AbstractTransmissionBase::getIsInitialized(void) const
+    bool_t const & AbstractInvertibleTransmissionBase::getIsInitialized(void) const
     {
         return isInitialized_;
     }
 
-    std::string const & AbstractTransmissionBase::getName(void) const
+    std::string const & AbstractInvertibleTransmissionBase::getName(void) const
     {
         return name_;
     }
 
-    int32_t const & AbstractTransmissionBase::getIdx(void) const
+    int32_t const & AbstractInvertibleTransmissionBase::getIdx(void) const
     {
         return transmissionIdx_;
     }
 
-    std::vector<std::string> const & AbstractTransmissionBase::getJointNames(void) const
+    std::vector<std::string> const & AbstractInvertibleTransmissionBase::getJointNames(void) const
     {
         return jointNames_;
     }
 
-    std::vector<jointIndex_t> const & AbstractTransmissionBase::getJointModelIndices(void) const
+    std::vector<jointIndex_t> const & AbstractInvertibleTransmissionBase::getJointModelIndices(void) const
     {
         return jointModelIndices_;
     }
 
-    std::vector<joint_t> const & AbstractTransmissionBase::getJointTypes(void) const
+    std::vector<joint_t> const & AbstractInvertibleTransmissionBase::getJointTypes(void) const
     {
         return jointTypes_;
     }
 
-    std::vector<int32_t> const & AbstractTransmissionBase::getJointPositionIndices(void) const
+    std::vector<int32_t> const & AbstractInvertibleTransmissionBase::getJointPositionIndices(void) const
     {
         return jointPositionIndices_;
     }
 
-    std::vector<int32_t> const & AbstractTransmissionBase::getJointVelocityIndices(void) const
+    std::vector<int32_t> const & AbstractInvertibleTransmissionBase::getJointVelocityIndices(void) const
     {
 
         return jointVelocityIndices_;
     }
 
-    std::vector<std::string> const & AbstractTransmissionBase::getMotorNames(void) const
+    std::vector<std::string> const & AbstractInvertibleTransmissionBase::getMotorNames(void) const
     {
         return motorNames_;
     }
 
-    std::vector<std::size_t> const & AbstractTransmissionBase::getMotorIndices(void) const
+    std::vector<std::size_t> const & AbstractInvertibleTransmissionBase::getMotorIndices(void) const
     {
         return motorIndices_;
     }
 
-    matrixN_t const & AbstractTransmissionBase::getJacobian(void) const
+    matrixN_t const & AbstractInvertibleTransmissionBase::getJacobian(void) const
     {
         return forwardJacobian_;
     }
 
-    matrixN_t const & AbstractTransmissionBase::getInverseJacobian(void) const
+    matrixN_t const & AbstractInvertibleTransmissionBase::getInverseJacobian(void) const
     {
         return backwardJacobian_;
     }
 
-    hresult_t AbstractTransmissionBase::computeForward(float64_t const & /*t*/,
+    hresult_t AbstractInvertibleTransmissionBase::computeForward(float64_t const & /*t*/,
                                                        vectorN_t & /*q*/,
                                                        vectorN_t & /*v*/,
                                                        vectorN_t & /*a*/,
@@ -326,7 +357,7 @@ namespace jiminy
 
     }
 
-    hresult_t AbstractTransmissionBase::computeBackward(float64_t const & /*t*/,
+    hresult_t AbstractInvertibleTransmissionBase::computeBackward(float64_t const & /*t*/,
                                                         vectorN_t const & /*q*/,
                                                         vectorN_t const & /*v*/,
                                                         vectorN_t const & /*a*/,
@@ -336,7 +367,7 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
-    hresult_t AbstractTransmissionBase::reset(void)
+    hresult_t AbstractInvertibleTransmissionBase::reset(void)
     {
         // Make sure the motor is attached to a robot
         if (!isAttached_)
