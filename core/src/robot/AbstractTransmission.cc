@@ -26,8 +26,10 @@ namespace jiminy
     forwardJacobian_(),
     backwardJacobian_()
     {
-        // TODO initialize the options
+        // Initialize the options
+        setOptions(transmissionOptionsHolder_);
     }
+
 
     AbstractInvertibleTransmissionBase::~AbstractInvertibleTransmissionBase(void)
     {
@@ -172,10 +174,32 @@ namespace jiminy
         return hresult_t::SUCCESS;
     }
 
-    hresult_t AbstractInvertibleTransmissionBase::setOptions(configHolder_t const & /*transmissionOptions*/)
+    hresult_t AbstractInvertibleTransmissionBase::setOptions(configHolder_t const & transmissionOptions)
     {
-        // TODO SetOptions
-        return hresult_t::SUCCESS;
+        // Check if the internal buffers must be updated
+        bool_t internalBuffersMustBeUpdated = false;
+        if (isInitialized_)
+        {
+            // Check if reduction ratio has changed
+            float64_t const & mechanicalReduction = boost::get<float64_t>(transmissionOptions.at("mechanicalReduction"));
+            internalBuffersMustBeUpdated |= std::abs(mechanicalReduction - baseTransmissionOptions_->mechanicalReduction) > EPS;
+        }
+
+        // Update the transmission's options
+        transmissionOptionsHolder_ = transmissionOptions;
+        baseTransmissionOptions_ = std::make_unique<abstractTransmissionOptions_t const>(transmissionOptionsHolder_);
+
+        // TODO delete this here; not necessary to refresh proxies ?
+        // Refresh the proxies if the robot is initialized if available
+        if (auto robot = robot_.lock())
+        {
+            if (internalBuffersMustBeUpdated && robot->getIsInitialized() && isAttached_)
+            {
+                hresult_t returnCode = refreshProxies();
+            }
+        }
+
+        return returnCode;
     }
 
     configHolder_t AbstractInvertibleTransmissionBase::getOptions(void) const

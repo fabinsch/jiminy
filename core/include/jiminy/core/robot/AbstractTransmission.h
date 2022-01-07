@@ -30,31 +30,6 @@ namespace jiminy
 
     public:
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        /// \brief      Dictionary gathering the configuration options shared between transmissions
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        virtual configHolder_t getDefaultTransmissionOptions(void)
-        {
-            configHolder_t config;
-
-            // TODO this here should not be just a float, can be a function
-            config["mechanicalReduction"] = 0.0;
-            return config;
-        };
-
-        struct abstractTransmissionOptions_t
-        {
-            float64_t const mechanicalReduction;
-
-            abstractTransmissionOptions_t(configHolder_t const & options) :
-            // TODO modify type, more generic options
-            mechanicalReduction(boost::get<float64_t>(options.at("mechanicalReduction")))
-            {
-                // Empty.
-            }
-        };
-
-    public:
-        ///////////////////////////////////////////////////////////////////////////////////////////////
         /// \brief      Forbid the copy of the class
         ///////////////////////////////////////////////////////////////////////////////////////////////
         AbstractInvertibleTransmissionBase(AbstractInvertibleTransmissionBase const & abstractTransmission) = delete;

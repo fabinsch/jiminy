@@ -10,23 +10,21 @@ namespace jiminy
     {
     public:
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        /// \brief      Dictionary gathering the configuration options shared between transmissions
+        /// \brief      Dictionary gathering the configuration options
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        virtual configHolder_t getDefaultTransmissionOptions(void) override
+        virtual configHolder_t getDefaultTransmissionOptions(void)
         {
-            // Add extra options or update default values
-            configHolder_t config = AbstractInvertibleTransmissionBase::getDefaultTransmissionOptions();
+        {
+            configHolder_t config;
             config["mechanicalReduction"] = 0.0;
-
             return config;
         };
 
-        struct transmissionOptions_t : public abstractTransmissionOptions_t
+        struct transmissionOptions_t
         {
             float64_t const mechanicalReduction;    ///< Gear reduction ratio motor to joint
 
             transmissionOptions_t(configHolder_t const & options) :
-            abstractTransmissionOptions_t(options),
             mechanicalReduction(boost::get<float64_t>(options.at("mechanicalReduction")))
             {
                 // Empty.
