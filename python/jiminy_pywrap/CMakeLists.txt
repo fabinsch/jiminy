@@ -19,6 +19,7 @@ set(SRC
     "${CMAKE_CURRENT_BINARY_DIR}/src/Robot.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/src/Sensors.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/src/Motors.cc"
+    "${CMAKE_CURRENT_BINARY_DIR}/src/Transmissions.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/src/Controllers.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/src/Constraints.cc"
     "${CMAKE_CURRENT_BINARY_DIR}/src/Engine.cc"

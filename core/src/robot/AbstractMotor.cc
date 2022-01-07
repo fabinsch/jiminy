@@ -39,7 +39,7 @@ namespace jiminy
     }
 
     hresult_t AbstractMotorBase::attach(std::weak_ptr<Robot const> robot,
-                                        std::function<hresult_t(AbstractMotorBase & /*motor*/)> notifyRobot,
+                                        std::function<hresult_t(AbstractMotorBase & /* motor */)> notifyRobot,
                                         MotorSharedDataHolder_t * sharedHolder)
     {
         // Make sure the motor is not already attached

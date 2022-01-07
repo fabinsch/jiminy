@@ -5,6 +5,7 @@
 
 #include "jiminy/core/robot/AbstractMotor.h"
 #include "jiminy/core/robot/AbstractSensor.h"
+#include "jiminy/core/robot/AbstractTransmission.h"
 #include "jiminy/core/telemetry/TelemetryData.h"
 #include "jiminy/core/io/FileDevice.h"
 #include "jiminy/core/utilities/Helpers.h"
@@ -22,9 +23,11 @@ namespace jiminy
     telemetryData_(nullptr),
     motorsHolder_(),
     sensorsGroupHolder_(),
+    transmissionsHolder_(),
     sensorTelemetryOptions_(),
     motorsNames_(),
     sensorsNames_(),
+    transmissionsNames_(),
     commandFieldnames_(),
     motorEffortFieldnames_(),
     nmotors_(0U),
@@ -85,6 +88,15 @@ namespace jiminy
             if (!sensorGroup.second.empty())
             {
                 (*sensorGroup.second.begin())->resetAll();
+            }
+        }
+
+        // Reset the transmissions
+        if (!transmissionsHolder_.empty())
+        {
+            for (auto & transmission : transmissionsHolder_)
+            {
+                transmission->reset();
             }
         }
 
@@ -1434,5 +1446,98 @@ namespace jiminy
     uint64_t const & Robot::nmotors(void) const
     {
         return nmotors_;
+    }
+
+    hresult_t Robot::refreshTransmissionProxies(void)
+    {
+        hresult_t returnCode = hresult_t::SUCCESS;
+
+        if (!isInitialized_)
+        {
+            PRINT_ERROR("Robot not initialized.");
+            returnCode = hresult_t::ERROR_INIT_FAILED;
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Determine the number of motors
+            std::size_t ntransmissions = transmissionsHolder_.size();
+
+            // Extract the motor names
+            transmissionsNames_.clear();
+            transmissionsNames_.reserve(ntransmissions);
+            std::transform(transmissionsHolder_.begin(), transmissionsHolder_.end(),
+                           std::back_inserter(transmissionsNames_),
+                           [](auto const & elem) -> std::string
+                           {
+                               return elem->getName();
+                           });
+        }
+
+        return hresult_t::SUCCESS;
+    }
+
+    hresult_t Robot::attachTransmission(std::shared_ptr<AbstractInvertibleTransmissionBase> transmission)
+    {
+        hresult_t returnCode = hresult_t::SUCCESS;
+
+        if (!isInitialized_)
+        {
+            PRINT_ERROR("The robot is not initialized.");
+            returnCode = hresult_t::ERROR_INIT_FAILED;
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            if (getIsLocked())
+            {
+                PRINT_ERROR("Robot is locked, probably because a simulation is running. "
+                            "Please stop it before adding transmissions.");
+                returnCode = hresult_t::ERROR_GENERIC;
+            }
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            std::string const & transmissionName = transmission->getName();
+            auto transmissionIt = std::find_if(transmissionsHolder_.begin(), transmissionsHolder_.end(),
+                                               [&transmissionName](auto const & elem)
+                                               {
+                                                   return (elem->getName() == transmissionName);
+                                               });
+            if (transmissionIt != transmissionsHolder_.end())
+            {
+                PRINT_ERROR("A transmission with the same name already exists.");
+                returnCode = hresult_t::ERROR_BAD_INPUT;
+            }
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Attach the transmission
+            returnCode = transmission->attach(shared_from_this());
+        }
+
+        if (returnCode == hresult_t::SUCCESS)
+        {
+            // Add the transmission to the holder
+            transmissionsHolder_.push_back(transmission);
+
+            // Refresh the transmissions proxies
+            refreshTransmissionProxies();
+        }
+
+        return returnCode;
+    }
+
+    std::vector<std::string> Robot::getActuatedJointNames(void) const
+    {
+        std::vector<std::string> actuatedJointNames;
+        for (auto transmissionIt : transmissionsHolder_)
+        {
+            std::vector<std::string> joints = transmissionIt->getJointNames();
+            actuatedJointNames.insert(actuatedJointNames.end(), joints.begin(), joints.end());
+        }
+        return actuatedJointNames;
     }
 }

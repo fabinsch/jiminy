@@ -7,6 +7,7 @@
 
 #include "jiminy/core/engine/Engine.h"
 #include "jiminy/core/robot/BasicMotors.h"
+#include "jiminy/core/robot/BasicTransmissions.h"
 #include "jiminy/core/control/ControllerFunctor.h"
 #include "jiminy/core/io/FileDevice.h"
 #include "jiminy/core/utilities/Helpers.h"
@@ -66,6 +67,7 @@ int main(int /* argc */, char_t * /* argv */[])
 
     // Instantiate and configuration the robot
     std::vector<std::string> motorJointNames{"SecondPendulumJoint"};
+    std::vector<std::string> transmissionNames{"SimpleTransmissionSecondPendulumJoint"};
 
     auto robot = std::make_shared<Robot>();
     configHolder_t modelOptions = robot->getModelOptions();
@@ -78,6 +80,18 @@ int main(int /* argc */, char_t * /* argv */[])
         auto motor = std::make_shared<SimpleMotor>(jointName);
         robot->attachMotor(motor);
         motor->initialize(jointName);
+        std::cout << "motor initialized" << std::endl;
+    }
+
+    for (std::string const & transmissionName : transmissionNames)
+    {
+        auto transmission = std::make_shared<SimpleTransmission>(transmissionName);
+        robot->attachTransmission(transmission);
+        std::cout<< "transmission attached" <<std::endl;
+        transmission->initialize(motorJointNames, motorJointNames);
+        std::cout<< "transmission initialized" <<std::endl;
+        std::cout<< "Print out:" <<std::endl;
+        for (std::string j : robot->getActuatedJointNames()){std::cout << j << std::endl;}
     }
 
     // Instantiate and configuration the controller

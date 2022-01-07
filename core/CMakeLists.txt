@@ -23,7 +23,7 @@ find_package(pinocchio 2.5.6 REQUIRED NO_MODULE NO_CMAKE_SYSTEM_PATH)  # Pinocch
 find_package(hpp-fcl 1.7.1 REQUIRED NO_MODULE NO_CMAKE_SYSTEM_PATH)  # hpp-fcl >= 1.7.1 adds collision geometry pointers
 find_package(Eigen3 3.3.0 REQUIRED NO_MODULE)  # It adds the target Eigen3::Eigen
 
-# Pinocchio-specific stuffs
+# Pinocchio-specific stuff
 set(COMPILE_FLAGS "-DPINOCCHIO_WITH_URDFDOM -DPINOCCHIO_WITH_HPP_FCL")
 if (urdfdom_VERSION) # Assume version strictly older than 0.4.0 if urdfdom version undefined
     if (urdfdom_VERSION VERSION_GREATER_EQUAL "0.4.0")
@@ -64,6 +64,8 @@ set(SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicMotors.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/AbstractSensor.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicSensors.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/AbstractTransmission.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/BasicTransmissions.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/robot/Robot.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/control/AbstractController.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/solver/LCPSolvers.cc"
